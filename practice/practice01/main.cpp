@@ -1,6 +1,8 @@
 #include <iostream>
 #include <vector>
 
+
+// Function that prints main menu
 void printMenu() {
   std::cout << "\nMain Menu:\n";
   std::cout << "1. Add element to vector\n";
@@ -50,4 +52,33 @@ void findSum(const std::vector<int>& userVec) {
 
 void printMultiples(const std::vector<int>& userVec) {
   if (userVec.empty()) {
-    
+    std::cout << "The vector is empty\n";
+    return;
+
+  }
+
+
+  int value;
+  std::cout << "Enter a number to find multiples of: ";
+  std::cin >> value;
+
+
+  std::cout << "Multiples of " << value << ": ";
+  bool found = false;
+  for (int userNum : userVec) {
+    if (userNum % value == 0) {
+      std::cout << userNum << " ";
+      found = true;
+
+    }
+  }
+  if (!found) {
+    std::cout << "None found.";
+  }
+  std::cout << std::endl;
+}
+
+
+int main() {
+
+}

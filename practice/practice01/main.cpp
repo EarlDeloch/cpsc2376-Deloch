@@ -82,5 +82,39 @@ void printMultiples(const std::vector<int>& userVec) {
 
 
 int main() {
+    //Creating empty vector
+    std::vector<int> userVec;
+    int choice;
+    //starting an infitnite loop
+    while (true) {
+        printMenu();  // Display the menu
+        std::cin >> choice;
 
+        if (choice == 1) {
+            addItem(userVec);
+        }
+        else if (choice == 2) {
+            printVector(userVec);
+        }
+        else if (choice == 3) {
+            doubleVector(userVec);
+        }
+        else if (choice == 4) {
+            findSum(userVec);
+        }
+        else if (choice == 5) {
+            printMultiples(userVec);
+        }
+        else if (choice == 6) {
+            //breaking infinite loop
+            std::cout << "Exiting program...\n";
+            break;
+        }
+        else {
+            std::cout << "Invalid choice! Please try again.\n";
+        }
+    }
+
+    return 0;
+}
 }

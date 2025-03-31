@@ -1,0 +1,155 @@
+#include <algorithm> // Contains reverse function
+#include <iostream>
+#include <vector>
+#include <cstdlib> // Contains random function
+#include <ctime> // Contains time function
+
+using namespace std;
+
+const int SIZE = 4; // Used to make 4x4 board
+vector<vector<int>> board; // Declaring 2D vector using size constant
+int totalScore; // Persistent counter tracking total sum of all numbers
+
+// Enumeration for game status
+enum class GameStatus {
+    WIN,      // Player wins (2048 reached)
+    CONTINUE, // Game still playable
+    GAME_OVER // No valid moves left
+};
+
+void printRules() { // Function prints game rules
+    cout << "Welcome to 2048!\n";
+    cout << "Combine tiles with the same number to reach 2048.\n";
+    cout << "Controls: Use W (Up), A (Left), S (Down), D (Right) to move tiles.\n";
+    cout << "Try to achieve the highest score possible. Good luck!\n";
+    cout << "Press Enter to start the game...";
+    cin.ignore();
+    cin.get(); // Pause for user to read the rules
+}
+
+void printBoard() {  // Function prints board
+    system("clear"); // Clears game board using system function from <cstdlib>
+    cout << "2048 Game:\n"; // Board header
+    for (const auto &row : board) { // For loop iterates over each row
+        for (int num : row) { // Nested for loop goes over each item in the row
+            cout << (num ? to_string(num) : "-") << "\t"; // Converts 0s to -'s using to_string function
+        }
+        cout << "\n";
+    }
+    cout << "Score: " << totalScore << "\n"; // Prints sum of numbers on board
+}
+
+void spawnTile() { // Function for adding new number to board
+    vector<pair<int, int>> emptyTiles; // Vector stores pairs of integers representing row and column
+    for (int i = 0; i < SIZE; ++i) // Loops 4 times
+        for (int j = 0; j < SIZE; ++j) // Nested loop loops 4 times every loop
+            if (board[i][j] == 0) // Checks if the value at the position (i, j) is 0
+                emptyTiles.push_back({i, j}); // Adds to end of vector of empty tiles
+
+    if (!emptyTiles.empty()) { // Checks for empty spaces on board
+        auto [row, col] = emptyTiles[rand() % emptyTiles.size()]; // Generates a random index in each empty tile in the vector
+        board[row][col] = (rand() % 10 < 9) ? 2 : 4; // Assigns new random value of 2 or 4
+        totalScore += board[row][col]; // Adds it to the total sum of the board
+    }
+}
+
+GameStatus checkGameStatus() { // Function checks if game is ongoing, won, or lost
+    for (int i = 0; i < SIZE; ++i) { // Loops through board
+        for (int j = 0; j < SIZE; ++j) { // Loops through board
+            if (board[i][j] == 2048) return GameStatus::WIN; // Checks for 2048 tile (win condition)
+        }
+    }
+    for (int i = 0; i < SIZE; ++i) { // Loops through board
+        for (int j = 0; j < SIZE; ++j) { // Loops through board
+            if (board[i][j] == 0) return GameStatus::CONTINUE; // Returns valid move if any 0s on the board
+            if (j < SIZE - 1 && board[i][j] == board[i][j + 1]) return GameStatus::CONTINUE; // Checks for adjacent numbers that are equal
+            if (i < SIZE - 1 && board[i][j] == board[i + 1][j]) return GameStatus::CONTINUE; // Checks for adjacent numbers that are equal
+        }
+    }
+    return GameStatus::GAME_OVER; // Returns GAME_OVER if no valid moves remain
+}
+
+void slideAndMerge(vector<int> &line) { // Function moves numbers, merges equals, and creates new empty spaces
+    vector<int> newLine(SIZE, 0); // Creates vector to hold new number setup
+    int index = 0; // Variable for iterating through vector
+    for (int num : line) { // Iterates over line vector
+        if (num != 0) { // Checks if the current number can be merged
+            if (index > 0 && newLine[index - 1] == num) { // If previous number is the same, merge them
+                newLine[index - 1] *= 2;
+                totalScore += newLine[index - 1]; // Updates score
+            } else {
+                newLine[index++] = num; // Otherwise, just move the number
+            }
+        }
+    }
+    line = newLine; // Copies back to original vector
+}
+
+void moveTiles(int direction) { // Function handles directional input
+    vector<vector<int>> oldBoard = board; // Saves current board to vector
+    if (direction == 0) { // Up
+        for (int j = 0; j < SIZE; ++j) { // Loops through columns
+            vector<int> column; // Temporary column storage
+            for (int i = 0; i < SIZE; ++i) column.push_back(board[i][j]); // Moves columns up
+            slideAndMerge(column); // Moves and merges passing and editing column by reference
+            for (int i = 0; i < SIZE; ++i) board[i][j] = column[i]; // Pastes new column to board
+        }
+    } else if (direction == 1) { // Down
+        for (int j = 0; j < SIZE; ++j) { // Loops through columns
+            vector<int> column; // Temporary column storage
+            for (int i = SIZE - 1; i >= 0; --i) column.push_back(board[i][j]); // Pushes values into column vector
+            slideAndMerge(column); // Moves and merges passing and editing column by reference
+            for (int i = SIZE - 1, k = 0; i >= 0; --i, ++k) board[i][j] = column[k]; // Pastes new column to board
+        }
+    } else if (direction == 2) { // Left
+        for (int i = 0; i < SIZE; ++i) {
+            slideAndMerge(board[i]);
+        }
+    } else if (direction == 3) { // Right
+        for (int i = 0; i < SIZE; ++i) {
+            reverse(board[i].begin(), board[i].end());
+            slideAndMerge(board[i]);
+            reverse(board[i].begin(), board[i].end());
+        }
+    }
+    if (board != oldBoard) spawnTile(); // If the board has changed, spawn a new tile
+}
+
+void resetGame() { // Resets game state for a new round
+    board = vector<vector<int>>(SIZE, vector<int>(SIZE, 0));
+    totalScore = 0;
+    spawnTile();
+    spawnTile();
+}
+
+int main() {
+    srand(time(0)); // Sets the starting seed
+    printRules(); // Displays game rules before start
+    while (true) {
+        resetGame(); // Initializes board
+        while (true) {
+            printBoard();
+            GameStatus status = checkGameStatus();
+            if (status == GameStatus::WIN) {
+                cout << "Congratulations! You reached 2048!\n";
+                break;
+            } else if (status == GameStatus::GAME_OVER) {
+                cout << "Game Over!\n";
+                break;
+            }
+            cout << "Move (WASD): ";
+            char input;
+            cin >> input;
+            if (input == 'w') moveTiles(0);
+            else if (input == 's') moveTiles(1);
+            else if (input == 'a') moveTiles(2);
+            else if (input == 'd') moveTiles(3);
+        }
+        char choice;
+        cout << "Play again? (y/n): ";
+        cin >> choice;
+        if (choice != 'y') break;
+    }
+    cout << "Thanks for playing!\n";
+    return 0;
+}

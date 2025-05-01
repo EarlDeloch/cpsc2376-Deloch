@@ -1,0 +1,9 @@
+Salaried 104 Dana 6200
+Hourly 105 Evan 18 140
+Commission 106 Fiona 1800 12000 0.04
+Salaried 107 George 4500
+Hourly 108 Hannah 25 100
+Commission 109 Ian 2500 10000 0.06
+Salaried 110 Julia 7000
+Hourly 111 Kevin 22 170
+Commission 112 Laura 2000 8000 0.03
